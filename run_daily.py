@@ -22,8 +22,11 @@ are skipped on read, not fatal.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -340,11 +343,58 @@ def run_all() -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# Telegram notification
+# ---------------------------------------------------------------------------
+
+def notify_telegram(text: str) -> bool:
+    """Send the daily report to Telegram. Returns True on success.
+
+    Reads credentials from environment variables:
+        TELEGRAM_BOT_TOKEN  — from @BotFather
+        TELEGRAM_CHAT_ID    — your chat ID (from @userinfobot)
+
+    Silently skips if credentials are missing (local dev without Telegram).
+    """
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
+
+    if not token or not chat_id:
+        return False
+
+    # Telegram Bot API has a 4096 char limit per message. Truncate if needed.
+    if len(text) > 4000:
+        text = text[:4000] + "\n\n... (truncated)"
+
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = json.dumps({
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "Markdown",
+    }).encode("utf-8")
+
+    try:
+        req = urllib.request.Request(
+            url,
+            data=payload,
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return resp.status == 200
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return False
+
+
 def main() -> int:
     rec = run_all()
     append_history(rec)
 
-    print(brief(rec))
+    text = brief(rec)
+    print(text)
+
+    # Notify on failure (exit 1 or 2). Clean runs stay silent.
+    if rec["exit"] in (1, 2):
+        notify_telegram(text)
 
     return rec["exit"]
 
