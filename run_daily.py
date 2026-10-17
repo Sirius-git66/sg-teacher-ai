@@ -2,13 +2,14 @@
 
     python run_daily.py
 
-Runs six stages in order:
+Runs seven stages in order:
   1. watch  — fetch MOE sources, compare content hashes
   2. scan   — crawl MOE news pages for new AI-related links
   3. audit  — check fact freshness and tool listing validity
   4. build  — generate the static site (refuses if audit fails)
   5. bill   — validate sponsor ledger
   6. data   — collate query logs into structured analysis (Data Bot)
+  7. brain  — analyze data and draft proposals (Brain Bot)
 
 Exit codes:
     0   all stages clean
@@ -312,6 +313,21 @@ def stage_data() -> dict:
         }
 
 
+def stage_brain() -> dict:
+    """Run the Brain Bot — analyze data and draft proposals."""
+    import run_brain
+    try:
+        return run_brain.run()
+    except Exception as e:
+        return {
+            "stage": "brain",
+            "ok": False,
+            "failed": True,
+            "proposals": 0,
+            "error": f"{type(e).__name__}: {e}",
+        }
+
+
 # ---------------------------------------------------------------------------
 # Aggregation
 # ---------------------------------------------------------------------------
@@ -422,6 +438,19 @@ def brief(rec: dict) -> str:
             if err:
                 lines.append(f"  {err}")
 
+        elif name == "brain":
+            proposals = s.get("proposals", 0)
+            high = s.get("high_priority", 0)
+            summary = s.get("summary", "")
+            err = s.get("error", "")
+            lines.append(f"  Proposals: {proposals}")
+            if high:
+                lines.append(f"  HIGH PRIORITY: {high}")
+            if summary:
+                lines.append(f"  {summary}")
+            if err:
+                lines.append(f"  {err}")
+
         lines.append("")
 
     lines.append("=" * 60)
@@ -465,7 +494,7 @@ def append_history(rec: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def run_all() -> dict:
-    """Run all six stages and return the aggregated record."""
+    """Run all seven stages and return the aggregated record."""
     stages = [
         stage_watch(),
         stage_scan(),
@@ -473,6 +502,7 @@ def run_all() -> dict:
         stage_build(),
         stage_bill(),
         stage_data(),
+        stage_brain(),
     ]
 
     exit_code = worst_exit(stages)
