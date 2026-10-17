@@ -1,0 +1,4 @@
+# Standard library only — no external dependencies.
+# The entire build pipeline uses Python 3.11+ stdlib.
+# This file exists so Netlify's build environment knows
+# there is nothing to pip install.

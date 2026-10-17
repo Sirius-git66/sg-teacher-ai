@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{PAGE_TITLE}}</title>
+  <meta name="description" content="Independent reference for Singapore teachers: which AI tools are permitted under MOE rules, with verifiable citations.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- Plausible analytics — proxied through our domain to avoid ad blockers -->
+  <script defer data-domain="PLACEHOLDER_DOMAIN" src="/js/script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="site-logo">
+        <span class="logo-mark">AI</span>
+        <span class="logo-text">in SG Schools</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="site-nav">
+        <a href="/" class="nav-link {{NAV_INDEX_ACTIVE}}">Checker</a>
+        <a href="/tools.html" class="nav-link {{NAV_TOOLS_ACTIVE}}">Tools</a>
+        <a href="/sources.html" class="nav-link {{NAV_SOURCES_ACTIVE}}">Sources</a>
+        <a href="/about.html" class="nav-link {{NAV_ABOUT_ACTIVE}}">About</a>
+        <a href="/sponsors.html" class="nav-link nav-sponsor {{NAV_SPONSORS_ACTIVE}}">Sponsors</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    {{PAGE_CONTENT}}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <h3>AI in SG Schools</h3>
+          <p>Independent reference for Singapore teachers. Every claim sourced, every verdict verifiable.</p>
+          <p class="footer-disclaimer">Not affiliated with or endorsed by the Ministry of Education, Singapore.</p>
+        </div>
+        <div class="footer-stats">
+          <h3>Status</h3>
+          <ul>
+            <li>{{FACT_COUNT}} facts registered</li>
+            <li>{{SOURCE_COUNT}} sources cited</li>
+            <li>{{TOOL_COUNT}} tools listed ({{OFFICIAL_COUNT}} official, {{COMMERCIAL_COUNT}} commercial)</li>
+            <li>Last verified: {{BUILD_DATE}}</li>
+            <li>Shortest review window: {{SHORTEST_WINDOW}} days</li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h3>Navigate</h3>
+          <ul>
+            <li><a href="/">Scenario Checker</a></li>
+            <li><a href="/tools.html">Tool Directory</a></li>
+            <li><a href="/sources.html">Sources & Citations</a></li>
+            <li><a href="/about.html">About & Methodology</a></li>
+            <li><a href="/sponsors.html">Sponsorship</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Built {{BUILD_DATE}}. Build fails when claims go stale — that is the product working.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/checker-data.js"></script>
+  <script src="/mascot-data.js"></script>
+  <script src="/js/mascot.js"></script>
+  <script src="/js/checker.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<section class="hero">
+  <div class="container">
+    <h1>Which AI tools can Singapore teachers use, under MOE rules?</h1>
+    <p>Every answer is sourced from MOE's own publications. Click the citation to verify. If we are wrong, the source will show you.</p>
+  </div>
+</section>
+
+<div class="mascot-area">
+  <div class="mascot-canvas-wrap">
+    <canvas id="mascot-canvas" width="160" height="160"></canvas>
+    <div id="mascot-speech" class="mascot-speech" aria-live="polite">Every claim here is sourced.</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="checker">
+    <h2>Scenario Checker</h2>
+    <p style="text-align:center;color:var(--text-muted);font-size:0.9rem;margin-bottom:1.25rem;">Pick three things. Get one answer — with the MOE quote behind it.</p>
+    <div class="checker-fields">
+      <div class="checker-field">
+        <label for="chk-level">Which level?</label>
+        <select id="chk-level">
+          {{LEVEL_OPTIONS}}
+        </select>
+      </div>
+      <div class="checker-field">
+        <label for="chk-audience">Who is using it?</label>
+        <select id="chk-audience">
+          {{AUDIENCE_OPTIONS}}
+        </select>
+      </div>
+      <div class="checker-field">
+        <label for="chk-tool">Which tool?</label>
+        <select id="chk-tool">
+          {{TOOL_OPTIONS}}
+        </select>
+      </div>
+    </div>
+    <button id="chk-btn" class="checker-btn">Check</button>
+    <div id="checker-result" class="checker-result"></div>
+  </div>
+
+  <section class="notify-section">
+    <h2>Get notified when MOE rules change</h2>
+    <p>One email when a fact is updated. No newsletter, no marketing. Just the change and the source.</p>
+    <form name="notify" method="POST" data-netlify="true" class="notify-form">
+      <input type="hidden" name="form-name" value="notify">
+      <input type="email" name="email" placeholder="your@email.edu.sg" required>
+      <button type="submit">Notify me</button>
+    </form>
+  </section>
+</div>

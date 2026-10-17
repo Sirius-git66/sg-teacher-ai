@@ -1,0 +1,18 @@
+[build]
+  command = "python build_site.py"
+  publish = "dist"
+
+[build.environment]
+  PYTHON_VERSION = "3.11"
+
+# Plausible proxy — avoids third-party script blocking by ad blockers.
+# The script loads from our own domain, then proxies to Plausible's servers.
+[[redirects]]
+  from = "/js/script.js"
+  to = "https://plausible.io/js/script.js"
+  status = 200
+
+[[redirects]]
+  from = "/api/event"
+  to = "https://plausible.io/api/event"
+  status = 200

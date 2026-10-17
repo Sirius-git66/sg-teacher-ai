@@ -1,0 +1,30 @@
+<div class="container">
+  <div class="page-header">
+    <h1>Sources & Citations</h1>
+    <p>Every claim on this site traces to one of {{SOURCE_COUNT}} primary sources. Below are the sources and the {{FACT_COUNT}} facts cited from them. Click any source link to verify. Check the date we last read it.</p>
+  </div>
+
+  <h2 style="font-size:1.15rem;margin-bottom:1rem;">Primary Sources</h2>
+  <div class="source-cards">
+    {{SOURCE_CARDS}}
+  </div>
+
+  <h2 style="font-size:1.15rem;margin:2rem 0 0.5rem;">All Cited Facts</h2>
+  <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem;">Verbatim quotes from MOE sources. Last verified: {{BUILD_DATE}}. Shortest review window: {{SHORTEST_WINDOW}} days.</p>
+  <div class="fact-table-wrap">
+    <table class="fact-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Claim</th>
+          <th>Verbatim Quote</th>
+          <th>Source</th>
+          <th>Checked</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{FACT_TABLE}}
+      </tbody>
+    </table>
+  </div>
+</div>

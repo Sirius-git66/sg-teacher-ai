@@ -1,0 +1,40 @@
+<div class="container">
+  <div class="page-header">
+    <h1>About This Site</h1>
+    <p>What this is, how it works, and what it deliberately will not do.</p>
+  </div>
+
+  <div class="about-content">
+    <h2>What this is</h2>
+    <p>A reference site for Singapore teachers answering one question: <strong>"what can I actually use, at my level, under MOE rules?"</strong></p>
+    <p>Everyone else publishes lists. The problem with lists is that they go quietly wrong. MOE adds tools, shifts boundaries, and the list keeps claiming things that are no longer true. Nobody notices, because a well-formatted list looks authoritative whether or not it is.</p>
+    <p>So what we built is not really a website. It is a <strong>fact-checking machine that generates a website</strong>. The site cannot be published if any of its claims have gone stale.</p>
+
+    <div class="about-rules">
+      <h3>Three rules this site enforces by construction</h3>
+      <ol>
+        <li><strong>No unsourced claim.</strong> Every fact requires a source URL and a verbatim quote. There is no way to add an assertion without evidence attached.</li>
+        <li><strong>No silent refresh.</strong> Every fact has a review window. When it passes, the build fails and nothing is published. Re-verification must be deliberate — someone has to read the page again.</li>
+        <li><strong>Stale is a visible state.</strong> A fact past its review window reports as STALE, never deleted and never quietly kept. Deleting a fact hides the gap; a stale fact shows the reader we might be wrong.</li>
+      </ol>
+    </div>
+
+    <h2>How the scenario checker works</h2>
+    <p>The checker is three dropdowns: level, audience, tool. You pick three things and get one answer — the verdict, why, what you must do, and the MOE quote with a link.</p>
+    <p><strong>No rule lives in the JavaScript.</strong> The dropdowns only look up answers that the Python build already produced and vetted. Every possible combination was pre-computed against the fact registry. When the question falls outside what we hold, the checker says "we cannot answer that" and tells you who to ask instead.</p>
+    <p>That refusal is a feature. A chatbot answers in prose we cannot cite, so a teacher pasting it into a risk assessment has nothing to verify. It looks authoritative precisely when it should look uncertain.</p>
+
+    <h2>What we will not do</h2>
+    <p>We will not rate a commercial tool as "Permitted." We cannot audit a vendor's data handling, training terms, or age gating. The ceiling is "Conditional" — usable under stated conditions. An unverified tool is "Hold."</p>
+    <p>We will not put sponsor slots next to official MOE tools. Selling a slot beside something MOE built would destroy the only credibility this site has.</p>
+    <p>We will not sell verdicts. Sponsorship buys a labelled slot, never a rating upgrade.</p>
+
+    <h2>Current status</h2>
+    <p>{{FACT_COUNT}} facts registered, all with verbatim MOE quotes. {{SOURCE_COUNT}} primary sources, all official MOE domains. {{TOOL_COUNT}} tools listed ({{OFFICIAL_COUNT}} official, {{COMMERCIAL_COUNT}} commercial). Last verified {{BUILD_DATE}}. Shortest review window: {{SHORTEST_WINDOW}} days.</p>
+
+    <div class="qa-section">
+      <h2>Common Questions</h2>
+      {{ONBOARD_QA}}
+    </div>
+  </div>
+</div>
