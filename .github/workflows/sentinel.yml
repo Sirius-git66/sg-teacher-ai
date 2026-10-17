@@ -9,6 +9,8 @@ on:
 jobs:
   sentinel:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # allow push back to repo
     steps:
       - uses: actions/checkout@v4
 
