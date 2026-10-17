@@ -2,17 +2,22 @@ name: Sentinel Daily
 
 on:
   schedule:
-    # 8:00 AM SGT = 00:00 UTC
-    - cron: '0 0 * * *'
-  workflow_dispatch:  # allow manual trigger
+    - cron: '0 0 * * *'   # 8:00 AM SGT
+  workflow_dispatch:
+
+concurrency:
+  group: sentinel-main
+  cancel-in-progress: false
 
 jobs:
   sentinel:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # allow push back to repo
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -33,8 +38,19 @@ jobs:
         run: |
           git config user.name "Sentinel Bot"
           git config user.email "sentinel@sg-teacher-ai"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
           git add -A
-          git diff --cached --quiet || git commit -m "Sentinel: daily run $(date -u +%Y-%m-%d)"
-          git fetch origin main
-          git push --force-with-lease origin main
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Sentinel: daily run $(date -u +%Y-%m-%d)"
+
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin main && exit 0
+            echo "Push attempt $i failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
+          echo "Could not push after 3 attempts."
+          exit 1
