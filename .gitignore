@@ -25,5 +25,6 @@ env/
 
 # Sentinel runtime state
 .sentinel_state.json
+.sentinel_scan_state.json
 .sentinel_history.jsonl
 ledger.json

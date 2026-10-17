@@ -699,7 +699,7 @@ def test_daily() -> None:
           parsed is None and code == 3, f"code={code}")
 
     # Every stage must report a distinct name, or brief() silently drops one.
-    names = {"watch", "audit", "build", "bill"}
+    names = {"watch", "scan", "audit", "build", "bill"}
     # A dead source and a changed source are different failures with different
 # remedies, so the summary has to be able to say both. The fixture carries
 # both; asserting "DEAD" against a changed-only fixture would be testing my
@@ -707,6 +707,7 @@ def test_daily() -> None:
     rec = {"exit": 1, "stages": [
     {"stage": "watch", "ok": False, "failed": True, "checked": 4,
     "dead": ["sls_aied"], "changed": ["moe_aied"]},
+    {"stage": "scan", "ok": True, "new": [], "total_found": 50, "errors": []},
     {"stage": "audit", "ok": False, "blocking": ["STALE_FACT: x"],
     "facts": 22, "tools": 9, "verified_days_ago": 99,
     "shortest_window_days": 22, "reverify_by": "2026-11-08",
@@ -722,7 +723,7 @@ def test_daily() -> None:
     check("every stage appears in the summary",
           {s["stage"] for s in rec["stages"]} == names)
     check("an overdue re-verification is reported as a negative day count",
-          rec["stages"][1]["days_to_reverify"] < 0)
+          rec["stages"][2]["days_to_reverify"] < 0)
 
     # The binding deadline must be the EARLIEST per-fact deadline, not
     # (shortest window - stalest age). Those differ whenever the most recently

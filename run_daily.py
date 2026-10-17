@@ -2,11 +2,12 @@
 
     python run_daily.py
 
-Runs four stages in order:
+Runs five stages in order:
   1. watch  — fetch MOE sources, compare content hashes
-  2. audit  — check fact freshness and tool listing validity
-  3. build  — generate the static site (refuses if audit fails)
-  4. bill   — validate sponsor ledger
+  2. scan   — crawl MOE news pages for new AI-related links
+  3. audit  — check fact freshness and tool listing validity
+  4. build  — generate the static site (refuses if audit fails)
+  5. bill   — validate sponsor ledger
 
 Exit codes:
     0   all stages clean
@@ -23,6 +24,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -40,6 +42,17 @@ from moe import tools as tools_mod
 
 ROOT = Path(__file__).resolve().parent
 HISTORY = ROOT / ".sentinel_history.jsonl"
+SCAN_STATE = ROOT / ".sentinel_scan_state.json"
+
+#: MOE pages to crawl for new AI-related announcements.
+SCAN_URLS = [
+    "https://www.moe.gov.sg/news",
+    "https://www.moe.gov.sg/news/press-releases",
+]
+
+#: Keywords that flag a link as AI-related.
+AI_KEYWORDS = ["ai", "artificial intelligence", "chatbot", "chat-bot",
+               "generative", "large language", "llm", "gpt"]
 
 
 # ---------------------------------------------------------------------------
@@ -98,6 +111,89 @@ def stage_watch() -> dict:
         "checked": parsed.get("checked", 0),
         "dead": parsed.get("dead", []),
         "changed": parsed.get("changed", []),
+    }
+
+
+def _load_scan_state() -> set[str]:
+    """Load previously seen URLs from state file."""
+    if SCAN_STATE.exists():
+        try:
+            data = json.loads(SCAN_STATE.read_text(encoding="utf-8"))
+            return set(data.get("urls", []))
+        except (json.JSONDecodeError, ValueError):
+            return set()
+    return set()
+
+
+def _save_scan_state(urls: set[str]) -> None:
+    """Persist seen URLs to state file."""
+    SCAN_STATE.write_text(json.dumps({"urls": sorted(urls)}, indent=2), encoding="utf-8")
+
+
+def _fetch_page(url: str) -> str | None:
+    """Fetch a page and return its text, or None on failure."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Sentinel/1.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return resp.read().decode("utf-8", errors="replace")
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return None
+
+
+def _extract_links(html: str, base_url: str) -> set[str]:
+    """Extract all absolute moe.gov.sg links from HTML."""
+    links = set()
+    # Find all href attributes
+    for match in re.finditer(r'href=["\']([^"\'>\s]+)["\']', html, re.IGNORECASE):
+        href = match.group(1)
+        # Resolve relative URLs
+        if href.startswith("/"):
+            from urllib.parse import urljoin
+            href = urljoin(base_url, href)
+        # Only keep moe.gov.sg links
+        if "moe.gov.sg" in href and href.startswith("https://"):
+            # Strip query strings and fragments for dedup
+            clean = href.split("?")[0].split("#")[0]
+            links.add(clean)
+    return links
+
+
+def _is_ai_related(url: str, text: str) -> bool:
+    """Check if a URL or its surrounding text mentions AI."""
+    combined = (url + " " + text).lower()
+    return any(kw in combined for kw in AI_KEYWORDS)
+
+
+def stage_scan() -> dict:
+    """Crawl MOE news pages for new AI-related links."""
+    known = _load_scan_state()
+    found: set[str] = set()
+    new_links: list[str] = []
+    errors: list[str] = []
+
+    for url in SCAN_URLS:
+        html = _fetch_page(url)
+        if html is None:
+            errors.append(url)
+            continue
+        links = _extract_links(html, url)
+        found.update(links)
+
+    # Filter for AI-related links not previously seen
+    for link in sorted(found):
+        if link not in known and _is_ai_related(link, ""):
+            new_links.append(link)
+
+    # Save all found URLs as known
+    _save_scan_state(found)
+
+    return {
+        "stage": "scan",
+        "ok": not new_links,
+        "failed": False,
+        "new": new_links,
+        "total_found": len(found),
+        "errors": errors,
     }
 
 
@@ -247,6 +343,20 @@ def brief(rec: dict) -> str:
             if not dead and not changed:
                 lines.append("  All sources unchanged.")
 
+        elif name == "scan":
+            new = s.get("new", [])
+            total = s.get("total_found", 0)
+            errors = s.get("errors", [])
+            lines.append(f"  Scanned: {len(SCAN_URLS)} pages, {total} links found")
+            if new:
+                lines.append(f"  NEW: {len(new)} AI-related link(s) not seen before:")
+                for link in new:
+                    lines.append(f"    - {link}")
+            else:
+                lines.append("  No new AI-related links.")
+            if errors:
+                lines.append(f"  ERRORS: {', '.join(errors)}")
+
         elif name == "audit":
             blocking = s.get("blocking", [])
             facts = s.get("facts", 0)
@@ -327,9 +437,10 @@ def append_history(rec: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def run_all() -> dict:
-    """Run all four stages and return the aggregated record."""
+    """Run all five stages and return the aggregated record."""
     stages = [
         stage_watch(),
+        stage_scan(),
         stage_audit(),
         stage_build(),
         stage_bill(),
