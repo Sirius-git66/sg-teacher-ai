@@ -31,6 +31,7 @@
       }
       render(a);
       trackEvent('checker_use', { verdict: a.v, tool: toolEl.value });
+      logQuery(levelEl.value, audEl.value, toolEl.value, a.v);
     });
 
     // Also check on any dropdown change
@@ -109,6 +110,21 @@
   function trackEvent(name, props) {
     if (typeof plausible === 'function') {
       plausible(name, { props: props });
+    }
+  }
+
+  // Log query to Netlify Blobs via serverless function.
+  // Fire-and-forget: failures are silent so the checker never breaks.
+  function logQuery(level, audience, tool, verdict) {
+    try {
+      fetch('/api/log_query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ level: level, audience: audience, tool: tool, verdict: verdict }),
+        keepalive: true,
+      });
+    } catch (e) {
+      // Silently ignore — logging must never break the checker.
     }
   }
 
