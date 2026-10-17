@@ -416,6 +416,12 @@ def build(check_only: bool = False) -> list[str]:
         shutil.copy2(asset_file, DIST / asset_file.name)
     messages.append(f"Copied {len(list(ASSETS_DIR.glob('*')))} asset(s)")
 
+    # Override index.html with the hand-crafted original design
+    original_index = ROOT / "index.html"
+    if original_index.exists():
+        shutil.copy2(original_index, DIST / "index.html")
+        messages.append("Overrode index.html with original design")
+
     # --- Step 6: Verify output ---
     dist_files = {p.name for p in DIST.glob("*") if p.is_file()}
     expected = {"index.html", "tools.html", "sources.html", "about.html",
