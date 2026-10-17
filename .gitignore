@@ -22,3 +22,8 @@ desktop.ini
 .env
 .venv/
 env/
+
+# Sentinel runtime state
+.sentinel_state.json
+.sentinel_history.jsonl
+ledger.json

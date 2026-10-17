@@ -184,6 +184,11 @@ def answer(level: str, audience: str, tool_key: str) -> Answer:
                 "own carries consequences for academic dishonesty."
             )
             evidence_keys.append("disclosure_rule")
+            escalate = (
+                "National examinations prohibit AI use. Ensure students "
+                "understand the boundary between permitted classroom use "
+                "and exam conditions."
+            )
 
         if level == "jc":
             conditions.append(
@@ -202,6 +207,7 @@ def answer(level: str, audience: str, tool_key: str) -> Answer:
             ),
             conditions=tuple(conditions),
             evidence=tuple(evidence_keys),
+            escalate=escalate if level in ("secondary", "jc") else "",
         )
 
     # Commercial tools with students: never cleared outright
@@ -272,17 +278,17 @@ def citations_for(a: Answer) -> list[tuple[str, str, str]]:
 
 
 def all_tool_options() -> list[tuple[str, str, str, str]]:
-    """Every tool as (level, audience, tool_key, tool_name) for the GUI.
+    """Every tool as (tool_key, level, audience, tool_name) for the GUI.
 
     The site offers each tool at each level for each audience. The checker
     then looks up the pre-vetted answer. Tools are grouped into official
     and commercial for display purposes.
     """
     return [
-        (level, audience, t.key, t.name)
+        (t.key, level, audience, t.name)
+        for t in tools_mod.TOOLS
         for level in sorted(LEVELS)
         for audience in sorted(AUDIENCES)
-        for t in tools_mod.TOOLS
     ]
 
 

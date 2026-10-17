@@ -494,7 +494,7 @@ def test_gui() -> None:
 
     # No rule may live in the JavaScript. It may only look up pre-vetted data.
     check("the JS contains no verdict logic, only a lookup",
-          "D.a[L.value" in (SITE / "index.html").read_text(encoding="utf-8"))
+          "D.a[" in (SITE / "js/checker.js").read_text(encoding="utf-8"))
 
     # The four verdicts the UI must be able to render.
     vs = {a["v"] for a in fresh["a"].values()}

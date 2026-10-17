@@ -12,8 +12,16 @@ Exit codes:
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 from moe import builder
+from moe import checker
+
+#: Output directory for the built site. Exposed for tests.
+SITE = Path(__file__).resolve().parent / "dist"
+
+# Re-export checker module and payload function for tests.
+checker_payload = checker.checker_payload
 
 
 def main() -> int:
