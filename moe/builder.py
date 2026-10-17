@@ -409,10 +409,6 @@ def build(check_only: bool = False) -> list[str]:
     # JS
     for js_file in JS_DIR.glob("*.js"):
         shutil.copy2(js_file, DIST / "js" / js_file.name)
-    # Also copy mascot.js from root if it exists (legacy location)
-    root_mascot = ROOT / "mascot.js"
-    if root_mascot.exists():
-        shutil.copy2(root_mascot, DIST / "js" / "mascot.js")
     messages.append(f"Copied {len(list(JS_DIR.glob('*.js')))} JS file(s)")
 
     # Assets
