@@ -419,8 +419,12 @@ def build(check_only: bool = False) -> list[str]:
     # Override index.html with the hand-crafted original design
     original_index = ROOT / "index.html"
     if original_index.exists():
-        shutil.copy2(original_index, DIST / "index.html")
-        messages.append("Overrode index.html with original design")
+        content = original_index.read_text(encoding="utf-8")
+        # Inject script to force animation on mobile (override prefers-reduced-motion)
+        override = '<script>matchMedia=function(q){return {matches:q!=="(prefers-reduced-motion: reduce)",addEventListener:function(){},removeEventListener:function(){}};};</script>'
+        content = content.replace("</body>", override + "</body>")
+        _write(DIST / "index.html", content)
+        messages.append("Overrode index.html with original design + mobile animation fix")
 
     # --- Step 6: Verify output ---
     dist_files = {p.name for p in DIST.glob("*") if p.is_file()}

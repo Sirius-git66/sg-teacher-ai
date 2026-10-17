@@ -143,8 +143,9 @@
   }
 
   // ---- animation -----------------------------------------------------------
-  var reduced = global.matchMedia
-    ? global.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+  // Always animate — no reduced-motion check. Mobile users get the same
+  // experience as desktop.
+  var reduced = false;
 
   function mount(canvas) {
     if (!canvas || !canvas.getContext) return null;
