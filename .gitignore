@@ -28,3 +28,4 @@ env/
 .sentinel_scan_state.json
 .sentinel_history.jsonl
 ledger.json
+data/

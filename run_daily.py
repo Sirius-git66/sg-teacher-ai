@@ -2,12 +2,13 @@
 
     python run_daily.py
 
-Runs five stages in order:
+Runs six stages in order:
   1. watch  — fetch MOE sources, compare content hashes
   2. scan   — crawl MOE news pages for new AI-related links
   3. audit  — check fact freshness and tool listing validity
   4. build  — generate the static site (refuses if audit fails)
   5. bill   — validate sponsor ledger
+  6. data   — collate query logs into structured analysis (Data Bot)
 
 Exit codes:
     0   all stages clean
@@ -296,6 +297,21 @@ def stage_bill() -> dict:
         }
 
 
+def stage_data() -> dict:
+    """Run the Data Bot — collate query logs into structured analysis."""
+    import run_data
+    try:
+        return run_data.run()
+    except Exception as e:
+        return {
+            "stage": "data",
+            "ok": False,
+            "failed": True,
+            "rows_processed": 0,
+            "error": f"{type(e).__name__}: {e}",
+        }
+
+
 # ---------------------------------------------------------------------------
 # Aggregation
 # ---------------------------------------------------------------------------
@@ -394,6 +410,18 @@ def brief(rec: dict) -> str:
             else:
                 lines.append("  No billing problems.")
 
+        elif name == "data":
+            rows = s.get("rows_processed", 0)
+            new_c = s.get("new_combos", 0)
+            gaps = s.get("coverage_gaps", 0)
+            emerging = s.get("emerging_tools", 0)
+            err = s.get("error", "")
+            lines.append(f"  Rows processed: {rows}")
+            if rows:
+                lines.append(f"  New combos: {new_c}, Coverage gaps: {gaps}, Emerging tools: {emerging}")
+            if err:
+                lines.append(f"  {err}")
+
         lines.append("")
 
     lines.append("=" * 60)
@@ -437,13 +465,14 @@ def append_history(rec: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def run_all() -> dict:
-    """Run all five stages and return the aggregated record."""
+    """Run all six stages and return the aggregated record."""
     stages = [
         stage_watch(),
         stage_scan(),
         stage_audit(),
         stage_build(),
         stage_bill(),
+        stage_data(),
     ]
 
     exit_code = worst_exit(stages)

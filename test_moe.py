@@ -699,7 +699,7 @@ def test_daily() -> None:
           parsed is None and code == 3, f"code={code}")
 
     # Every stage must report a distinct name, or brief() silently drops one.
-    names = {"watch", "scan", "audit", "build", "bill"}
+    names = {"watch", "scan", "audit", "build", "bill", "data"}
     # A dead source and a changed source are different failures with different
 # remedies, so the summary has to be able to say both. The fixture carries
 # both; asserting "DEAD" against a changed-only fixture would be testing my
@@ -716,6 +716,8 @@ def test_daily() -> None:
     {"stage": "bill", "ok": False, "failed": True, "problems": ["bad UEN"],
     "mrr_sgd": 0, "pipeline_sgd": 0, "active_sponsors": 1,
     "sponsors": 1},
+    {"stage": "data", "ok": True, "rows_processed": 42,
+    "new_combos": 3, "coverage_gaps": 2, "emerging_tools": 1},
     ]}
     text = run_daily.brief(rec)
     for token in ("DEAD", "CHANGED", "BLOCKING", "REFUSED", "ILLEGAL"):
