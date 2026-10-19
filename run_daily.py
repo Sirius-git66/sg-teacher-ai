@@ -2,7 +2,7 @@
 
     python run_daily.py
 
-Runs seven stages in order:
+Runs eight stages in order:
   1. watch  — fetch MOE sources, compare content hashes
   2. scan   — crawl MOE news pages for new AI-related links
   3. audit  — check fact freshness and tool listing validity
@@ -10,6 +10,7 @@ Runs seven stages in order:
   5. bill   — validate sponsor ledger
   6. data   — collate query logs into structured analysis (Data Bot)
   7. brain  — analyze data and draft proposals (Brain Bot)
+  8. verify — check source link health, site integrity, size (Verifier)
 
 Exit codes:
     0   all stages clean
@@ -328,6 +329,41 @@ def stage_brain() -> dict:
         }
 
 
+def stage_verify() -> dict:
+    """Verify source link health, built site integrity, and size."""
+    from moe import builder as builder_mod
+
+    dead_links: list[str] = []
+    for key, src in facts_mod.SOURCES.items():
+        if _fetch_page(src.url) is None:
+            dead_links.append(key)
+
+    missing_elements: list[str] = []
+    size_mb = 0.0
+    index_path = builder_mod.DIST / "index.html"
+    if index_path.exists():
+        html = index_path.read_text(encoding="utf-8")
+        size_mb = round(index_path.stat().st_size / 1_000_000, 2)
+        for el in ("Scenario Checker", "MOE rules", "Tools"):
+            if el not in html:
+                missing_elements.append(el)
+    else:
+        missing_elements.append("dist/index.html missing")
+
+    bloated = size_mb > 2.5
+    ok = not dead_links and not missing_elements and not bloated
+
+    return {
+        "stage": "verify",
+        "ok": ok,
+        "failed": False,
+        "dead_links": dead_links,
+        "missing_elements": missing_elements,
+        "size_mb": size_mb,
+        "bloated": bloated,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Aggregation
 # ---------------------------------------------------------------------------
@@ -451,6 +487,21 @@ def brief(rec: dict) -> str:
             if err:
                 lines.append(f"  {err}")
 
+        elif name == "verify":
+            dead = s.get("dead_links", [])
+            missing = s.get("missing_elements", [])
+            size = s.get("size_mb", 0)
+            bloated = s.get("bloated", False)
+            lines.append(f"  Site size: {size} MB")
+            if dead:
+                lines.append(f"  DEAD LINKS: {', '.join(dead)}")
+            if missing:
+                lines.append(f"  MISSING: {', '.join(missing)}")
+            if bloated:
+                lines.append(f"  BLOATED: over 2.5 MB threshold")
+            if not dead and not missing and not bloated:
+                lines.append("  All links healthy, site intact.")
+
         lines.append("")
 
     lines.append("=" * 60)
@@ -494,7 +545,7 @@ def append_history(rec: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def run_all() -> dict:
-    """Run all seven stages and return the aggregated record."""
+    """Run all eight stages and return the aggregated record."""
     stages = [
         stage_watch(),
         stage_scan(),
@@ -503,6 +554,7 @@ def run_all() -> dict:
         stage_bill(),
         stage_data(),
         stage_brain(),
+        stage_verify(),
     ]
 
     exit_code = worst_exit(stages)
